@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { Order } from './entities/order.entity';
@@ -8,6 +8,7 @@ import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
 import { OrderItem } from './entities/order-item.entity';
+import { ClientProxy } from '@nestjs/microservices';
 
 export interface CatalogProduct {
   id: string;
@@ -21,6 +22,8 @@ export class OrdersService {
     private readonly orderRepository: EntityRepository<Order>,
     private readonly httpService: HttpService,
     private readonly config: ConfigService,
+    @Inject('NATS_SERVICE')
+    private readonly natsClient: ClientProxy,
   ) {}
   async create(createOrderDto: CreateOrderDto) {
     const em = this.orderRepository.getEntityManager();
@@ -46,6 +49,14 @@ export class OrdersService {
     order.totalAmount = total.toFixed(2);
 
     await em.persist(order).flush();
+
+    this.natsClient.emit('order_created', {
+      orderId: order.id,
+      totalAmount: order.totalAmount,
+      itemCount: order.items.count(),
+      createdAt: order.createdAt,
+    });
+
     return order;
   }
 

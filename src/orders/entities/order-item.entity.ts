@@ -19,7 +19,7 @@ export class OrderItem {
   @Property()
   quantity!: number;
 
-  @ManyToOne(() => Order)
+  @ManyToOne(() => Order, { hidden: true })
   order!: Order;
 
   @Property({ onCreate: () => new Date() })

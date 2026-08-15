@@ -1,9 +1,11 @@
-// IDEIGLENES DTO — a CRUD-váz teszteléséhez.
-// Később: a kliens csak a termékeket + mennyiségeket küldi,
-// a totalAmount-ot és a status-t a SZERVER határozza meg. 🔒
-import { IsNumberString } from 'class-validator';
+import { ArrayMinSize, IsArray, ValidateNested } from 'class-validator';
+import { OrderItemDto } from './order-item.dto';
+import { Type } from 'class-transformer';
 
 export class CreateOrderDto {
-  @IsNumberString()
-  totalAmount!: string;
+  @IsArray()
+  @ArrayMinSize(1)
+  @ValidateNested({ each: true })
+  @Type(() => OrderItemDto)
+  items: OrderItemDto[];
 }

@@ -1,4 +1,4 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { Order } from './entities/order.entity';
@@ -17,6 +17,8 @@ export interface CatalogProduct {
 }
 @Injectable()
 export class OrdersService {
+  private readonly logger = new Logger(OrdersService.name);
+
   constructor(
     @InjectRepository(Order)
     private readonly orderRepository: EntityRepository<Order>,
@@ -50,12 +52,21 @@ export class OrdersService {
 
     await em.persist(order).flush();
 
-    this.natsClient.emit('order_created', {
-      orderId: order.id,
-      totalAmount: order.totalAmount,
-      itemCount: order.items.count(),
-      createdAt: order.createdAt,
-    });
+    try {
+      this.natsClient.emit('order.created', {
+        orderId: order.id,
+        totalAmount: order.totalAmount,
+        itemCount: order.items.count(),
+        createdAt: order.createdAt,
+      });
+    } catch (error) {
+      // Az értesítés nem kritikus: ha a NATS nem elérhető,
+      // a rendelés akkor is sikeres marad, csak naplózzuk a hibát.
+      this.logger.error(
+        'Nem sikerült elküldeni az order.created eseményt',
+        error,
+      );
+    }
 
     return order;
   }

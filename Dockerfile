@@ -16,8 +16,8 @@ COPY . .
 # 6. TypeScript lefordítása (a dist mappa jön létre)
 RUN npm run build
 
-# 7. A port, amin az app figyel (dokumentáció jelleggel)
+RUN chmod +x docker-entrypoint.sh
+
 EXPOSE 3002
 
-# 8. Az indító parancs: a lefordított appot futtatja
-CMD ["node", "dist/src/main.js"]
+CMD ["./docker-entrypoint.sh"]

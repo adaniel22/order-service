@@ -57,13 +57,15 @@ Normally you do not start this service on its own — it runs as part of the Doc
 
 Configuration comes from environment variables; `.env.example` lists all of them (database connection, `PORT`, `CATALOG_SERVICE_URL`, `NATS_URL`). Copy it to `.env` and fill in your own values — never commit real secrets.
 
-Database migrations are applied with the MikroORM CLI:
+## Migrations
+
+When the service runs in the Docker Compose stack, database migrations are **automatic**. On container startup an entrypoint script applies any pending migrations before the app starts — so there is no manual step when running via `docker compose`.
+
+For local development outside a container, you can run migrations manually:
 
 ```bash
 npm run mikro-orm -- migration:up
 ```
-
-(The sibling services expose this as `npm run mikro-orm -- migration:up`; this repo has no such script yet.)
 
 For local development against a reachable database, catalog service and NATS:
 

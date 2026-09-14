@@ -9,6 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
 import { OrderItem } from './entities/order-item.entity';
 import { ClientProxy } from '@nestjs/microservices';
+import { OrderStatus } from './entities/order-status.enum';
 
 export interface CatalogProduct {
   id: string;
@@ -95,6 +96,16 @@ export class OrdersService {
       throw new NotFoundException(`Order not found`);
     }
     return await this.orderRepository.getEntityManager().remove(order).flush();
+  }
+
+  async updateOrderStatus(id: string, status: OrderStatus) {
+    const order = await this.orderRepository.findOne({ id });
+    if (!order) {
+      throw new NotFoundException(`Order not found`);
+    }
+    order.status = status;
+    await this.orderRepository.getEntityManager().flush();
+    return order;
   }
 
   private async fetchProduct(productId: string): Promise<CatalogProduct> {

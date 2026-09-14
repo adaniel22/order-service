@@ -8,6 +8,7 @@ import {
 } from '@mikro-orm/core';
 import { randomUUID } from 'node:crypto';
 import { OrderItem } from './order-item.entity';
+import { OrderStatus } from './order-status.enum';
 
 @Entity()
 export class Order {
@@ -15,7 +16,7 @@ export class Order {
   id: string = randomUUID();
 
   @Property()
-  status: string & Opt = 'pending';
+  status: OrderStatus & Opt = OrderStatus.PENDING;
 
   @Property({ type: 'decimal', precision: 10, scale: 2 })
   totalAmount!: string;

@@ -7,11 +7,15 @@ import { OrderItem } from './entities/order-item.entity';
 import { HttpModule } from '@nestjs/axios';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { PassportModule } from '@nestjs/passport';
+import { JwtStrategy } from '../auth/jwt.strategy';
 
 @Module({
   imports: [
     MikroOrmModule.forFeature([Order, OrderItem]),
     HttpModule,
+    PassportModule,
+    ConfigModule,
     ClientsModule.registerAsync([
       {
         name: 'NATS_SERVICE',
@@ -27,6 +31,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     ]),
   ],
   controllers: [OrdersController],
-  providers: [OrdersService],
+  providers: [OrdersService, JwtStrategy],
 })
 export class OrdersModule {}
